@@ -1,128 +1,93 @@
-# MBPP Task Evaluation Pipeline
+# LLM Resource Comparison
 
-A comprehensive pipeline for evaluating Language Models (LLMs) on MBPP (Mostly Basic Python Programming) tasks with resource tracking and performance comparison.
+A framework for comparing resource consumption and performance of large vs. small language models on programming tasks.
 
 ## Project Overview
 
-This project implements an automated workflow that:
+This project evaluates and compares the resource efficiency and solution quality of different sized language models (LLMs) on Python programming tasks from the MBPP (Mostly Basic Python Programming) dataset. It implements an automated workflow that:
 
 1. Imports MBPP tasks from a JSONL file into MongoDB
-2. Processes tasks one by one through multiple models
-3. Runs large models (DeepSeek-7B) in Docker containers to track resource usage
-4. Evaluates solutions with a separate LLM evaluator model
-5. Tries smaller models (Qwen-0.5B) with fallback options if solutions fail
-6. Stores comprehensive evaluation results and resource metrics in MongoDB
+2. Processes tasks using two different model sizes:
+   - Large model (CodeLlama) for high accuracy
+   - Small model (TinyLlama) with branching strategy for resource efficiency
+3. Tracks resource usage (CPU, memory) of Ollama-based models
+4. Validates generated solutions against test cases
+5. Stores comprehensive evaluation results and resource metrics in MongoDB
 
 ## Architecture
 
-The system is built with a modular architecture:
+The system uses a modular architecture:
 
-- **Database Layer**: MongoDB integration for storing tasks and results
-- **Model Layer**: Abstraction for different LLM implementations
-- **Orchestration Layer**: Workflow and Docker container management
-- **Utilities**: Resource tracking, JSON processing, and configuration
+- **Database Layer**: MongoDB for storing tasks and evaluation results
+- **Model Layer**: 
+  - OllamaModel as base class
+  - LargeModel (CodeLlama) implementation
+  - SmallModel (TinyLlama) implementation
+- **Orchestration Layer**: 
+  - WorkflowManager for high-level pipeline coordination
+  - ModelManager for model instantiation and configuration
+  - ModelExecutionManager for running model inferences
+  - PromptFormatter for task-to-prompt conversion
+  - BranchingStrategy for small model fallback approaches
+  - ResourceManager for tracking resource consumption
+  - SolutionEvaluator for validating the generated code
+  - ResultProcessor for storing evaluation outcomes
+  - DaytonaSandboxManager for secure code execution
 
 ## Prerequisites
 
 - Python 3.8+
-- Docker and Docker Compose
-- NVIDIA GPU with CUDA support (recommended)
-- MongoDB instance (or use the provided Docker container)
+- MongoDB
+- [Ollama](https://ollama.ai) - for running CodeLlama and TinyLlama models locally
+- [Daytona](https://github.com/Daytona-Sandbox/daytona) SDK (optional) - for sandbox execution
 
 ## Installation
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/mbpp-evaluation.git
-   cd mbpp-evaluation
-   ```
-
+1. Clone the repository
 2. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
-
-3. Set up model directories:
+3. Pull required models via Ollama:
    ```
-   mkdir -p models_data/deepseek models_data/qwen models_data/evaluator
+   ollama pull codellama
+   ollama pull tinyllama
    ```
-
-4. Download the required models:
-   - DeepSeek-7B into `models_data/deepseek/`
-   - Qwen-0.5B into `models_data/qwen/`
-   - A suitable evaluator model into `models_data/evaluator/`
-
-5. Prepare the MBPP dataset:
-   ```
-   mkdir -p data
-   # Place the mbpp.jsonl file in the data directory
-   ```
-
-## Configuration
-
-Customize the configuration in `config/config.yaml` to match your environment:
-
-- MongoDB connection settings
-- Model paths and container configurations
-- Resource monitoring options
-- Docker container resource limits
+4. Ensure MongoDB is running locally
 
 ## Usage
 
-### Starting the Services
-
-Start the required Docker containers:
-
-```
-docker-compose up -d
-```
-
-This will launch:
-- MongoDB database
-- DeepSeek model container
-- Qwen model container
-- Evaluator model container
-
-### Running the Evaluation Pipeline
-
-Import MBPP tasks and run the evaluation:
-
-```
-python main.py --import-data
-```
-
-To run only the evaluation without importing data:
+Run the main script to start the evaluation:
 
 ```
 python main.py
 ```
 
-### Viewing Results
-
-Results are stored in MongoDB in the following collections:
-- `tasks`: The imported MBPP tasks
-- `evaluation_results`: Results of model evaluations
-- `resource_usage`: Resource usage metrics for each model run
-
-## Docker Containers
-
-The project includes Docker configurations for:
-
-1. **DeepSeek Container**: Serves the large model (7B) via an API
-2. **Qwen Container**: Serves the small model (0.5B) via an API
-3. **MongoDB Container**: Stores tasks and evaluation results
-
 ## Project Structure
 
 ```
 project_root/
-├── config/                 # Configuration files
-├── database/               # Database connection and operations
-├── docker/                 # Docker configurations for models
+├── database/               # MongoDB connection and operations
+│   └── mongo_client.py     # MongoDB client implementation
 ├── models/                 # Model implementations
-├── orchestrator/           # Workflow orchestration
+│   ├── ollama_model.py     # Base class for Ollama models
+│   ├── large_model.py      # CodeLlama implementation
+│   └── small_model.py      # TinyLlama implementation
+├── orchestrators/          # Workflow orchestration
+│   ├── workflow_manager.py         # Overall workflow coordination
+│   ├── model_manager.py            # Model instantiation and configuration
+│   ├── model_execution_manager.py  # Model inference execution
+│   ├── prompt_formatter.py         # Task-to-prompt conversion
+│   ├── branching_strategy.py       # Small model fallback approaches
+│   ├── resource_manager.py         # Resource consumption tracking
+│   ├── solution_evaluator.py       # Code validation
+│   ├── result_processor.py         # Outcome storage
+│   └── daytona_sandbox_manager.py  # Secure code execution
+├── resources/              # Resource tracking data
+│   ├── ollama_codellama    # CodeLlama resource metrics
+│   └── ollama_tinyllama    # TinyLlama resource metrics
 ├── utils/                  # Utility functions
-├── docker-compose.yml      # Docker services configuration
+│   └── ollama_resource_tracker.py  # Ollama process resource monitoring
 ├── main.py                 # Entry point
 └── requirements.txt        # Python dependencies
 ```
@@ -133,7 +98,15 @@ The system tracks:
 - CPU usage (percentage)
 - Memory usage (MB)
 - Duration of model execution
-- Average and peak resource usage
+- Average and peak resource usage for both large and small models
+
+## Research Focus
+
+This project aims to answer key questions about LLM resource efficiency:
+1. How much more resource-efficient are small models compared to large ones?
+2. Can branching strategies with small models achieve similar accuracy to large models?
+3. What is the optimal balance between resource usage and solution quality?
+4. In which scenarios are small models sufficient, and when are large models necessary?
 
 ## License
 
