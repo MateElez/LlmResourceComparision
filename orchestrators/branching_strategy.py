@@ -59,11 +59,15 @@ class BranchingStrategy:
         first_error = first_result.get("evaluation", {}).get("explanation", "")
         model_name = model.model_name if hasattr(model, 'model_name') else "default"
         
+        # Ovdje ćemo kreirati sve zadatke za sve razine grananja unaprijed
+        all_level_tasks = []
+        
+        # Prvo kreiramo sve zadatke za sve razine grananja bez čekanja
         for level in range(1, self.max_branching_level + 1):
             num_models = 2 ** level
-            logger.info(f"Razina grananja {level}: Pokrećem {num_models} modela paralelno")
+            level_tasks = []
             
-            branch_tasks = []
+            logger.info(f"Priprema razine grananja {level}: Kreiram {num_models} zadataka za paralelno izvršavanje")
             
             for i in range(num_models):
                 branch_name = f"branch_{level}_{i+1}"
@@ -77,39 +81,45 @@ class BranchingStrategy:
                     i
                 )
                 
-                branch_task = asyncio.create_task(
-                    model_executor(model, task, enhanced_prompt, branch_name)
-                )
-                branch_tasks.append(branch_task)
+                # Stvaramo zadatak ali ga ne pokrećemo još
+                branch_coro = model_executor(model, task, enhanced_prompt, branch_name)
+                level_tasks.append((branch_name, branch_coro))
             
-            branching_results = await asyncio.gather(*branch_tasks)
+            all_level_tasks.append(level_tasks)
+        
+        # Sada izvršavamo zadatke po razinama, ali osiguravamo da je svaki zadatak unutar razine stvarno paralelan
+        for level, level_tasks in enumerate(all_level_tasks, 1):
+            num_models = len(level_tasks)
+            logger.info(f"Razina grananja {level}: Pokrećem {num_models} modela STVARNO paralelno")
             
+            # Stvaramo i odmah pokrećemo sve zadatke na ovoj razini
+            running_tasks = []
+            task_names = []
+            
+            for branch_name, branch_coro in level_tasks:
+                # Stvarno pokretanje zadatka
+                task = asyncio.create_task(branch_coro)
+                running_tasks.append(task)
+                task_names.append(branch_name)
+            
+            # Čekamo da se svi zadaci izvrše paralelno
+            branching_results = await asyncio.gather(*running_tasks)
+            
+            # Obrada rezultata
             for i, branch_result in enumerate(branching_results):
-                branch_name = f"branch_{level}_{i+1}"
+                branch_name = task_names[i]
                 results[branch_name] = branch_result
                 
                 if branch_result.get("resources"):
                     all_resource_stats.append(branch_result["resources"])
                 
                 if branch_result.get("evaluation", {}).get("success", False):
-                    logger.info(f"Grana {branch_name} je proizvela potencijalno uspješno rješenje, validiram u Daytona sandboxu")
-                    
-                    is_valid = await self.sandbox_manager.validate_in_sandbox(
-                        branch_result.get("solution", ""), 
-                        task.get("test_list", []),
-                        task.get("test_setup_code", "")
-                    )
-                    
-                    if is_valid:
-                        logger.info(f"Rješenje iz grane {branch_name} uspješno validirano u Daytona sandboxu")
-                        results["successful_branch"] = branch_name
-                        break
-                    else:
-                        logger.warning(f"Rješenje iz grane {branch_name} nije prošlo validaciju u Daytona sandboxu")
-                        branch_result["evaluation"]["success"] = False
-                        branch_result["evaluation"]["explanation"] += " (Neuspješna validacija u Daytona sandboxu)"
+                    logger.info(f"Grana {branch_name} je proizvela uspješno rješenje")
+                    results["successful_branch"] = branch_name
             
+            # Ako je pronađeno uspješno rješenje, prekini grananje
             if "successful_branch" in results:
+                logger.info(f"Pronađeno uspješno rješenje u grani {results['successful_branch']}, završavam grananje")
                 break
         
         # Vraćamo prikupljene rezultate

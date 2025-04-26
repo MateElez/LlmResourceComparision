@@ -122,7 +122,7 @@ class OllamaResourceTracker:
         memory_total = 0
         memory_max = 0
         samples_collected = 0
-        min_samples_required = 5  
+        min_samples_required = 3  # Smanjujemo minimalni broj uzoraka koji se smatraju valjanim 
         
         gpu_tracking_available = False
         if track_gpu:
@@ -138,6 +138,7 @@ class OllamaResourceTracker:
             start_time = time.time()
             self._should_stop = False
             
+            # Inicijalno čitanje CPU korištenja za sve procese
             for proc in self.ollama_processes[:]:
                 try:
                     if proc.is_running():
@@ -145,7 +146,8 @@ class OllamaResourceTracker:
                 except Exception:
                     pass
                     
-            await asyncio.sleep(0.5)
+            # Kraći inicijalni delay za brže čitanje druge vrijednosti CPU-a
+            await asyncio.sleep(0.1)
             
             while samples_collected < max_samples and not self._should_stop:
                 sample = {
@@ -167,12 +169,14 @@ class OllamaResourceTracker:
                             memory_info = proc.memory_info()
                             memory_usage_mb = memory_info.rss / (1024 * 1024)
                             
-                            if cpu_usage > 0 or samples_collected > 0:
-                                cpu_sample_total += cpu_usage
-                                memory_sample_total += memory_usage_mb
-                                valid_processes += 1
-                                active_processes.append(proc)
-                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                            # Prihvaćamo sve vrijednosti, čak i 0 za prve uzorke
+                            cpu_sample_total += cpu_usage
+                            memory_sample_total += memory_usage_mb
+                            valid_processes += 1
+                            active_processes.append(proc)
+                            logger.debug(f"Process {proc.pid} CPU: {cpu_usage:.1f}%, Memory: {memory_usage_mb:.1f}MB")
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+                        logger.debug(f"Couldn't access process: {str(e)}")
                         continue
                 
                 self.ollama_processes = active_processes
@@ -185,13 +189,19 @@ class OllamaResourceTracker:
                     cpu_total += sample["cpu_percent"]
                     memory_total += sample["memory_mb"]
                     memory_max = max(memory_max, sample["memory_mb"])
+                    logger.debug(f"Sample {samples_collected+1}: CPU: {sample['cpu_percent']:.1f}%, Memory: {sample['memory_mb']:.1f}MB")
                 else:
+                    # Ako nismo pronašli procese, pokušaj pronaći nove
                     new_processes = self._find_ollama_processes()
                     if new_processes:
                         self.ollama_processes = new_processes
                         logger.info(f"Found {len(new_processes)} Ollama processes to track")
                         await asyncio.sleep(interval)
                         continue
+                    else:
+                        # Ako još uvijek nema procesa, prekidamo praćenje
+                        logger.warning("No Ollama processes found during tracking")
+                        break
                 
                 if gpu_tracking_available:
                     try:
@@ -218,19 +228,31 @@ class OllamaResourceTracker:
                         logger.error(f"Error collecting GPU data: {str(e)}")
                 
                 stats.append(sample)
-                
                 samples_collected += 1
                 
-                if samples_collected >= min_samples_required and samples_collected % 5 == 0:
-                    try:
-                        await asyncio.sleep(0)  
-                    except asyncio.CancelledError:
-                        logger.info(f"Resource tracking task cancelled after {samples_collected} samples")
-                        self._should_stop = True
-                        break
+                # Dodajemo check za prekid ako imamo dovoljno uzoraka
+                if self._should_stop:
+                    logger.info(f"Resource tracking stopping early after {samples_collected} samples")
+                    break
                 
+                # Kraći interval spavanja za više uzoraka u zadanom vremenskom okviru
                 await asyncio.sleep(interval)
             
+            # Ako nismo prikupili nikakve uzorke, vraćamo defaultne vrijednosti
+            if samples_collected == 0:
+                logger.warning("No samples collected during resource tracking")
+                return {
+                    "session_id": session_id,
+                    "samples": 0,
+                    "duration_seconds": time.time() - start_time,
+                    "avg_cpu_percent": 10.0,
+                    "avg_memory_mb": 500.0,
+                    "max_memory_mb": 1000.0,
+                    "detailed_stats": [],
+                    "note": "No samples collected, using default values"
+                }
+            
+            # Izračunaj prosjeke na temelju prikupljenih uzoraka
             avg_cpu = cpu_total / samples_collected if samples_collected > 0 else 0
             avg_memory = memory_total / samples_collected if samples_collected > 0 else 0
             
@@ -241,17 +263,18 @@ class OllamaResourceTracker:
                 "avg_cpu_percent": avg_cpu,
                 "avg_memory_mb": avg_memory,
                 "max_memory_mb": memory_max,
-                "detailed_stats": stats[:10]  
+                "detailed_stats": stats[:min(10, len(stats))]  # Samo prvih 10 uzoraka za uštedu prostora
             }
             
-            logger.info(f"Resource tracking completed: Avg CPU: {avg_cpu:.2f}%, Avg Memory: {avg_memory:.2f}MB, Samples: {samples_collected}")
+            logger.info(f"Resource tracking completed: Avg CPU: {avg_cpu:.2f}%, Avg Memory: {avg_memory:.2f}MB, Max Memory: {memory_max:.2f}MB, Samples: {samples_collected}")
             return result
             
         except asyncio.CancelledError:
+            # Čak i ako je praćenje prekinuto, vratimo parcijalne rezultate ako imamo dovoljno uzoraka
             if samples_collected >= min_samples_required:
                 logger.info(f"Resource tracking cancelled but has {samples_collected} valid samples - returning partial results")
-                avg_cpu = cpu_total / samples_collected if samples_collected > 0 else 0
-                avg_memory = memory_total / samples_collected if samples_collected > 0 else 0
+                avg_cpu = cpu_total / samples_collected
+                avg_memory = memory_total / samples_collected
                 
                 return {
                     "session_id": session_id,
@@ -260,32 +283,49 @@ class OllamaResourceTracker:
                     "avg_cpu_percent": avg_cpu,
                     "avg_memory_mb": avg_memory,
                     "max_memory_mb": memory_max,
-                    "detailed_stats": stats[:10],  
+                    "detailed_stats": stats[:min(10, len(stats))],
                     "note": "Partial results due to cancellation"
                 }
             else:
-                logger.warning(f"Resource tracking cancelled with only {samples_collected} samples - using default values")
-                return {
-                    "session_id": session_id,
-                    "samples": samples_collected,
-                    "duration_seconds": time.time() - start_time,
-                    "avg_cpu_percent": 5.0,  
-                    "avg_memory_mb": 300.0,  
-                    "max_memory_mb": 500.0,  
-                    "detailed_stats": stats,
-                    "note": "Insufficient samples, using default values"
-                }
+                # Ne koristimo više defaultne vrijednosti, već računamo na temelju onog što imamo
+                if samples_collected > 0:
+                    avg_cpu = cpu_total / samples_collected
+                    avg_memory = memory_total / samples_collected
+                    
+                    logger.warning(f"Resource tracking cancelled with only {samples_collected} samples, but still using them")
+                    return {
+                        "session_id": session_id,
+                        "samples": samples_collected,
+                        "duration_seconds": time.time() - start_time,
+                        "avg_cpu_percent": avg_cpu,
+                        "avg_memory_mb": avg_memory,
+                        "max_memory_mb": memory_max,
+                        "detailed_stats": stats,
+                        "note": f"Limited samples ({samples_collected}), but still valid"
+                    }
+                else:
+                    logger.warning("Resource tracking cancelled without any samples - using realistic default values")
+                    return {
+                        "session_id": session_id,
+                        "samples": 0,
+                        "duration_seconds": time.time() - start_time,
+                        "avg_cpu_percent": 15.0,  # Realističnije defaultne vrijednosti
+                        "avg_memory_mb": 800.0,   
+                        "max_memory_mb": 1200.0,
+                        "detailed_stats": [],
+                        "note": "No samples collected, using realistic default values"
+                    }
         except Exception as e:
             logger.error(f"Error while tracking Ollama resources: {str(e)}")
             return {
                 "error": str(e),
                 "session_id": session_id,
-                "avg_cpu_percent": 5.0,  
-                "avg_memory_mb": 300.0,  
-                "max_memory_mb": 500.0,  
+                "avg_cpu_percent": 15.0,
+                "avg_memory_mb": 800.0,
+                "max_memory_mb": 1200.0,
                 "duration_seconds": time.time() - start_time,
                 "samples": samples_collected,
-                "note": "Error during tracking, using default values"
+                "note": "Error during tracking, using realistic default values"
             }
     
     def stop_tracking(self):

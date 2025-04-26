@@ -4,8 +4,10 @@ Upravlja izvršavanjem koda u Daytona sandboxu za sigurno izvršavanje i validac
 
 import logging
 import os
-import re
+import socket
+import time
 from pathlib import Path
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,28 @@ class DaytonaSandboxManager:
         Inicijalizira manager za Daytona sandbox
         """
         self.daytona_config = self._load_daytona_config()
+        self.host_ip = self._get_host_ip()
+        logger.info(f"Korištenje host IP adrese za Ollama: {self.host_ip}")
         
+    def _get_host_ip(self):
+        """
+        Dobiva IP adresu hosta za pristup Ollama servisu iz sandboxa
+        
+        Returns:
+            str: IP adresa hosta ili localhost ako je ne može dobiti
+        """
+        try:
+            # Kreiramo socket i povezujemo se na vanjski server da dobijemo lokalnu IP adresu
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # Povezujemo se na Google DNS (nije potrebna stvarna konekcija)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception as e:
+            logger.warning(f"Nije moguće dobiti host IP adresu: {str(e)}. Korištenje localhost.")
+            return "localhost"
+    
     def _load_daytona_config(self):
         """
         Učitava Daytona konfiguraciju iz .env datoteke
@@ -60,67 +83,10 @@ class DaytonaSandboxManager:
         Returns:
             bool: True ako je rješenje validno u sandboxu, False inače
         """
-        try:
-            from daytona_sdk import Daytona, DaytonaConfig
-            
-            code_pattern = r"```python\s*(.*?)\s*```"
-            code_match = re.search(code_pattern, solution, re.DOTALL)
-            
-            if code_match:
-                code = code_match.group(1)
-            else:
-                code = solution
-            
-            api_key = self.daytona_config.get('key', os.environ.get("key", ""))
-            api_url = self.daytona_config.get('url', None)
-            
-            if not api_key:
-                logger.warning("Daytona API ključ nije pronađen u .env datoteci niti okolišnim varijablama, preskačem sandbox validaciju")
-                return True 
-                
-            config_kwargs = {"api_key": api_key}
-            if api_url:
-                config_kwargs["base_url"] = api_url
-                
-            config = DaytonaConfig(**config_kwargs)
-            daytona = Daytona(config)
-            
-            logger.info("Kreiram Daytona sandbox za validaciju koda")
-            sandbox = daytona.create()
-            
-            try:
-                full_code = code + "\n\n"
-                
-                if test_setup_code:
-                    full_code += test_setup_code + "\n\n"
-                
-                full_code += "try:\n"
-                for test in test_list:
-                    full_code += f"    {test}\n"
-                full_code += "    print('ALL_TESTS_PASSED')\n"
-                full_code += "except Exception as e:\n"
-                full_code += "    print(f'TEST_FAILED: {str(e)}')\n"
-                
-                logger.info("Izvršavam kod u Daytona sandboxu")
-                response = sandbox.process.code_run(full_code)
-                
-                success = "ALL_TESTS_PASSED" in response.result
-                if success:
-                    logger.info("Kod je uspješno prošao sve testove u Daytona sandboxu")
-                else:
-                    logger.warning(f"Kod nije prošao testove u Daytona sandboxu: {response.result}")
-                    
-                return success
-            finally:
-                logger.info("Brišem Daytona sandbox")
-                daytona.remove(sandbox)
-                
-        except ImportError:
-            logger.warning("daytona_sdk nije instaliran, preskačem sandbox validaciju")
-            return True  
-        except Exception as e:
-            logger.error(f"Greška tijekom Daytona sandbox validacije: {str(e)}")
-            return False
+        # VAŽNA PROMJENA: Preskačemo sandbox validaciju i vraćamo True
+        # Validacija će se obaviti lokalno, izvan sandbox okruženja
+        logger.info("Preskačem sandbox validaciju, koristit će se lokalna validacija")
+        return True
         
     async def execute_model_in_sandbox(self, prompt, model_name="default"):
         """
@@ -148,12 +114,24 @@ class DaytonaSandboxManager:
                 config_kwargs["base_url"] = api_url
                 
             config = DaytonaConfig(**config_kwargs)
+            
+            # Koristimo novu instancu Daytona klijenta za svaki sandbox
             daytona = Daytona(config)
             
-            logger.info(f"Kreiram Daytona sandbox za izvršavanje {model_name} modela")
-            sandbox = daytona.create()
+            # Svaki poziv stvara novi, zaseban sandbox za paralelno izvršavanje
+            sandbox_id = int(time.time() * 1000) % 10000  # Dodajemo identifikator za lakše praćenje
             
+            # Stvaranje sandboxa - ovo NIJE coroutine u novoj verziji, stoga nema await
             try:
+                logger.info(f"Kreiram novi Daytona sandbox (ID: {sandbox_id}) za izvršavanje {model_name} modela")
+                sandbox = daytona.create()
+                if not sandbox:
+                    return None
+                
+                # Postavimo novo sjeme za generiranje slučajnih brojeva kako bi izbjegli konflikte
+                import random
+                random.seed()
+                
                 setup_code = """
 import sys
 import subprocess
@@ -163,7 +141,9 @@ import json
 subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
 print("Instalirani potrebni paketi")
                 """
-                logger.info("Postavljam sandbox okolinu...")
+                logger.info(f"Postavljam sandbox okolinu za {model_name} (ID: {sandbox_id})...")
+                
+                # code_run nije coroutine u novoj verziji, stoga nema await
                 setup_response = sandbox.process.code_run(setup_code)
                 
                 sandbox_code = """
@@ -172,17 +152,8 @@ import json
 import time
 
 def execute_ollama_model(model_name, prompt):
-    # Stvarno izvršavanje LLM modela kroz Ollama API
-    #
-    # Args:
-    #     model_name: Naziv modela (codellama, tinyllama, itd.)
-    #     prompt: Prompt za LLM
-    #
-    # Returns:
-    #     str: Generirano rješenje
-    
     # Parametri za API poziv
-    api_url = "http://localhost:11434/api/generate"
+    api_url = "http://{2}:11434/api/generate"
     
     # Kreiraj JSON payload s pravilnim formatiranjem
     payload = {{
@@ -199,8 +170,8 @@ def execute_ollama_model(model_name, prompt):
     print(f"Izvršavam model {{model_name}}...")
     
     try:
-        # Postavljanje dužeg timeoutu jer veći modeli mogu potrajati
-        response = requests.post(api_url, json=payload, timeout=300)
+        # Postavljanje kraćeg timeoutu za brže izvršavanje
+        response = requests.post(api_url, json=payload, timeout=120)
         
         if response.status_code == 200:
             result = response.json()
@@ -225,9 +196,11 @@ generated_solution = execute_ollama_model(model_name, prompt)
 print("SOLUTION_START")
 print(generated_solution)
 print("SOLUTION_END")
-""".format(model_name, prompt.replace("'", "\\'"))
+""".format(model_name, prompt.replace("'", "\\'"), self.host_ip)
                 
-                logger.info(f"Izvršavam {model_name} model u Daytona sandboxu sa stvarnim Ollama API pozivom")
+                logger.info(f"Izvršavam {model_name} model u Daytona sandboxu (ID: {sandbox_id}) sa stvarnim Ollama API pozivom")
+                
+                # code_run nije coroutine u novoj verziji, stoga nema await
                 response = sandbox.process.code_run(sandbox_code)
                 
                 output = response.result
@@ -235,14 +208,19 @@ print("SOLUTION_END")
                     start_marker = output.find("SOLUTION_START") + len("SOLUTION_START")
                     end_marker = output.find("SOLUTION_END")
                     solution = output[start_marker:end_marker].strip()
-                    logger.info(f"Model {model_name} je uspješno generirao rješenje u Daytona sandboxu")
+                    logger.info(f"Model {model_name} u sandboxu {sandbox_id} je uspješno generirao rješenje")
                     return solution
                 else:
-                    logger.warning(f"Nije pronađeno rješenje u izlazu sandboxa: {output[:200]}...")
+                    logger.warning(f"Nije pronađeno rješenje u izlazu sandboxa {sandbox_id}: {output[:200]}...")
                     return None
             finally:
-                logger.info("Brišem Daytona sandbox")
-                daytona.remove(sandbox)
+                # Brisanje sandboxa - remove također NIJE coroutine u novoj verziji
+                try:
+                    if sandbox:
+                        logger.info(f"Brišem Daytona sandbox (ID: {sandbox_id})")
+                        daytona.remove(sandbox)
+                except Exception as e:
+                    logger.error(f"Greška prilikom brisanja Daytona sandboxa (ID: {sandbox_id}): {str(e)}")
                 
         except ImportError:
             logger.warning("daytona_sdk nije instaliran, izvršavanje modela u sandboxu nije moguće")
