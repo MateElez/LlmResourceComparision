@@ -134,25 +134,31 @@ class ResultProcessor:
         if small_model_result:
             result["models"]["small_model"] = small_model_result
             
-            succeeded_models = [
-                model for model, data in small_model_result.items()
-                if model != "average_resources" and model != "error" and 
-                data.get("evaluation", {}).get("success", False)
-            ]
+            succeeded_models = []
+            
+            # Provjerimo je li small_model_result rječnik
+            if isinstance(small_model_result, dict):
+                # Iteriramo kroz sve ključeve osim posebnih
+                for model, data in small_model_result.items():
+                    if model != "average_resources" and model != "error":
+                        # Provjerimo je li data rječnik prije pristupa .get metodi
+                        if isinstance(data, dict):
+                            # Sigurno pristupamo .get metodi na rječniku
+                            evaluation = data.get("evaluation", {})
+                            if isinstance(evaluation, dict) and evaluation.get("success", False):
+                                succeeded_models.append(model)
+                            
+                            # Provjera i inicijalizacija resources ako je potrebno
+                            if "resources" not in data or data["resources"] is None:
+                                data["resources"] = {
+                                    "avg_cpu_percent": 0,
+                                    "avg_memory_mb": 0,
+                                    "max_memory_mb": 0,
+                                    "duration_seconds": 0
+                                }
             
             result["summary"]["small_model_success"] = len(succeeded_models) > 0
             result["summary"]["successful_small_models"] = succeeded_models
-            
-            if not result["summary"]["small_model_success"]:
-                for model_name, model_data in small_model_result.items():
-                    if model_name != "average_resources" and model_name != "error":
-                        if "resources" not in model_data or model_data["resources"] is None:
-                            model_data["resources"] = {
-                                "avg_cpu_percent": 0,
-                                "avg_memory_mb": 0,
-                                "max_memory_mb": 0,
-                                "duration_seconds": 0
-                            }
         
         return result
     

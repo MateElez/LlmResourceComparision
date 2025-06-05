@@ -4,8 +4,6 @@ Implementira strategiju za eksponencijalno grananje modela kada početni model n
 
 import logging
 import asyncio
-import os
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -14,16 +12,14 @@ class BranchingStrategy:
     Implementira strategiju za eksponencijalno grananje kada model ne uspije
     """
     
-    def __init__(self, sandbox_manager, max_branching_level=3):
+    def __init__(self, max_branching_level=3):
         """
         Inicijalizacija strategije grananja
         
         Args:
-            sandbox_manager: Manager za Daytona sandbox
             max_branching_level (int): Maksimalna razina grananja (2^level modela)
         """
         self.max_branching_level = max_branching_level
-        self.sandbox_manager = sandbox_manager
         
     async def execute_branching(self, model, task, prompt_formatter, model_executor, first_result):
         """
@@ -124,30 +120,3 @@ class BranchingStrategy:
         
         # Vraćamo prikupljene rezultate
         return results, all_resource_stats
-    
-    async def execute_model_in_sandbox(self, prompt, model_name="default"):
-        """
-        Izvršava LLM model u Daytona sandboxu
-        
-        Args:
-            prompt (str): Prompt za model
-            model_name (str): Naziv modela
-            
-        Returns:
-            str: Generirano rješenje
-        """
-        return await self.sandbox_manager.execute_model_in_sandbox(prompt, model_name)
-        
-    async def _validate_in_daytona_sandbox(self, solution, test_list, test_setup_code):
-        """
-        Validira rješenje u Daytona sandboxu
-        
-        Args:
-            solution (str): Generirani kod rješenja
-            test_list (list): Lista test slučajeva
-            test_setup_code (str): Setup kod za testove
-            
-        Returns:
-            bool: True ako je rješenje validno, False inače
-        """
-        return await self.sandbox_manager.validate_in_sandbox(solution, test_list, test_setup_code)

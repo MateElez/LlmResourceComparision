@@ -1,0 +1,802 @@
+[
+    {
+        "task_id": 1,
+        "category": "strings",
+        "description": "Write a function to reverse a given string.",
+        "difficulty": "medium",
+        "input": "'hello'",
+        "expected_output": "'olleh'"
+    },
+    {
+        "task_id": 2,
+        "category": "strings",
+        "description": "Write a function to count the number of vowels in a string.",
+        "difficulty": "medium",
+        "input": "'education'",
+        "expected_output": "5"
+    },
+     {
+        "task_id": 3,
+        "category": "strings",
+        "description": "Write a function to convert a string to uppercase.",
+        "difficulty": "easy",
+        "input": "'hello world'",
+        "expected_output": "'HELLO WORLD'"
+    },
+    {
+        "task_id": 4,
+        "category": "strings",
+        "description": "Write a function to check if a string starts with a given prefix.",
+        "difficulty": "medium",
+        "input": "('hello', 'he')",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 5,
+        "category": "strings",
+        "description": "Write a function to remove leading and trailing whitespaces from a string.",
+        "difficulty": "easy",
+        "input": "'  hello  '",
+        "expected_output": "'hello'"
+    },
+    {
+        "task_id": 6,
+        "category": "strings",
+        "description": "Write a function to count the number of vowels in a string.",
+        "difficulty": "medium",
+        "input": "'programming'",
+        "expected_output": "3"
+    },
+    {
+        "task_id": 7,
+        "category": "strings",
+        "description": "Write a function to reverse each word in a sentence.",
+        "difficulty": "medium",
+        "input": "'Hello world'",
+        "expected_output": "'olleH dlrow'"
+    },
+    {
+        "task_id": 8,
+        "category": "strings",
+        "description": "Write a function to check if two strings are anagrams.",
+        "difficulty": "medium",
+        "input": "('listen', 'silent')",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 9,
+        "category": "strings",
+        "description": "Write a function to count the frequency of each character in a string.",
+        "difficulty": "medium",
+        "input": "'banana'",
+        "expected_output": "{'b': 1, 'a': 3, 'n': 2}"
+    },
+    {
+        "task_id": 10,
+        "category": "strings",
+        "description": "Write a function to check if a string contains only digits.",
+        "difficulty": "medium",
+        "input": "'12345'",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 11,
+        "category": "strings",
+        "description": "Write a function to remove all punctuation from a string.",
+        "difficulty": "medium",
+        "input": "'Hello, world!'",
+        "expected_output": "'Hello world'"
+    },
+    {
+        "task_id": 12,
+        "category": "strings",
+        "description": "Write a function to replace spaces with hyphens in a string.",
+        "difficulty": "medium",
+        "input": "'this is a test'",
+        "expected_output": "'this-is-a-test'"
+    },
+    {
+        "task_id": 13,
+        "category": "strings",
+        "description": "Write a function to find the longest word in a string.",
+        "difficulty": "medium",
+        "input": "'I love programming in Python'",
+        "expected_output": "'programming'"
+    },
+    {
+        "task_id": 14,
+        "category": "strings",
+        "description": "Write a function to count how many times a substring appears in a string.",
+        "difficulty": "medium",
+        "input": "('ababab', 'ab')",
+        "expected_output": "3"
+    },
+    {
+        "task_id": 15,
+        "category": "strings",
+        "description": "Write a function to capitalize the first letter of each word in a string.",
+        "difficulty": "medium",
+        "input": "'hello world'",
+        "expected_output": "'Hello World'"
+    },
+    {
+        "task_id": 16,
+        "category": "strings",
+        "description": "Write a function to check whether a string is a pangram.",
+        "difficulty": "medium",
+        "input": "'The quick brown fox jumps over the lazy dog'",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 17,
+        "category": "strings",
+        "description": "Write a function to remove duplicate characters from a string.",
+        "difficulty": "medium",
+        "input": "'programming'",
+        "expected_output": "'progamin'"
+    },
+    {
+        "task_id": 18,
+        "category": "strings",
+        "description": "Write a function to get the ASCII value of each character in a string.",
+        "difficulty": "medium",
+        "input": "'abc'",
+        "expected_output": "[97, 98, 99]"
+    },
+    {
+        "task_id": 19,
+        "category": "strings",
+        "description": "Write a function to check if all characters in a string are unique.",
+        "difficulty": "medium",
+        "input": "'abcdefg'",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 20,
+        "category": "strings",
+        "description": "Write a function to find all words longer than a given length in a string.",
+        "difficulty": "medium",
+        "input": "('The quick brown fox', 4)",
+        "expected_output": "['quick', 'brown']"
+    },
+    {
+        "task_id": 21,
+        "category": "Lists and arrays",
+        "description": "Write a function to find the maximum element in a list.",
+        "difficulty": "medium",
+        "input": "[1, 5, 3, 9, 2]",
+        "expected_output": "9"
+    },
+    {
+        "task_id": 22,
+        "category": "Lists and arrays",
+        "description": "Write a function to reverse a list.",
+        "difficulty": "medium",
+        "input": "[1, 2, 3, 4]",
+        "expected_output": "[4, 3, 2, 1]"
+    },
+    {
+        "task_id": 23,
+        "category": "Lists and arrays",
+        "description": "Write a function to find the sum of all elements in a list.",
+        "difficulty": "medium",
+        "input": "[10, 20, 30]",
+        "expected_output": "60"
+    },
+    {
+        "task_id": 24,
+        "category": "Lists and arrays",
+        "description": "Write a function to remove duplicates from a list.",
+        "difficulty": "medium",
+        "input": "[1, 2, 2, 3, 4, 4]",
+        "expected_output": "[1, 2, 3, 4]"
+    },
+    {
+        "task_id": 25,
+        "category": "Lists and arrays",
+        "description": "Write a function to merge two sorted lists into one sorted list.",
+        "difficulty": "medium",
+        "input": "([1, 3, 5], [2, 4, 6])",
+        "expected_output": "[1, 2, 3, 4, 5, 6]"
+    },
+    {
+        "task_id": 26,
+        "category": "Lists and arrays",
+        "description": "Write a function to find the second largest number in a list.",
+        "difficulty": "medium",
+        "input": "[10, 20, 4, 45, 99]",
+        "expected_output": "45"
+    },
+    {
+        "task_id": 27,
+        "category": "Lists and arrays",
+        "description": "Write a function to rotate a list by k elements to the right.",
+        "difficulty": "medium",
+        "input": "([1, 2, 3, 4, 5], 2)",
+        "expected_output": "[4, 5, 1, 2, 3]"
+    },
+    {
+        "task_id": 28,
+        "category": "Lists and arrays",
+        "description": "Write a function to flatten a nested list.",
+        "difficulty": "medium",
+        "input": "[1, [2, 3], [4, [5]]]",
+        "expected_output": "[1, 2, 3, 4, 5]"
+    },
+    {
+        "task_id": 29,
+        "category": "Lists and arrays",
+        "description": "Write a function to find common elements between two lists.",
+        "difficulty": "medium",
+        "input": "([1, 2, 3], [2, 3, 4])",
+        "expected_output": "[2, 3]"
+    },
+    {
+        "task_id": 30,
+        "category": "Lists and arrays",
+        "description": "Write a function to check if a list is a palindrome.",
+        "difficulty": "medium",
+        "input": "[1, 2, 3, 2, 1]",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 31,
+        "category": "Lists and arrays",
+        "description": "Write a function to split a list into chunks of size n.",
+        "difficulty": "medium",
+        "input": "([1, 2, 3, 4, 5], 2)",
+        "expected_output": "[[1, 2], [3, 4], [5]]"
+    },
+    {
+        "task_id": 32,
+        "category": "Lists and arrays",
+        "description": "Write a function to remove all even numbers from a list.",
+        "difficulty": "medium",
+        "input": "[1, 2, 3, 4, 5, 6]",
+        "expected_output": "[1, 3, 5]"
+    },
+    {
+        "task_id": 33,
+        "category": "Lists and arrays",
+        "description": "Write a function to count occurrences of each element in a list.",
+        "difficulty": "medium",
+        "input": "[1, 2, 2, 3, 3, 3]",
+        "expected_output": "{1: 1, 2: 2, 3: 3}"
+    },
+    {
+        "task_id": 34,
+        "category": "Lists and arrays",
+        "description": "Write a function to find the difference between two lists.",
+        "difficulty": "medium",
+        "input": "([1, 2, 3], [2, 4])",
+        "expected_output": "[1, 3]"
+    },
+    {
+        "task_id": 35,
+        "category": "Lists and arrays",
+        "description": "Write a function to find all pairs in a list that sum to a specific value.",
+        "difficulty": "medium",
+        "input": "([1, 2, 3, 4, 5], 6)",
+        "expected_output": "[(1, 5), (2, 4)]"
+    },
+    {
+        "task_id": 36,
+        "category": "Lists and arrays",
+        "description": "Write a function to sort a list of tuples based on the second element.",
+        "difficulty": "medium",
+        "input": "[(1, 3), (2, 1), (4, 2)]",
+        "expected_output": "[(2, 1), (4, 2), (1, 3)]"
+    },
+    {
+        "task_id": 37,
+        "category": "Lists and arrays",
+        "description": "Write a function to remove None values from a list.",
+        "difficulty": "medium",
+        "input": "[1, None, 2, None, 3]",
+        "expected_output": "[1, 2, 3]"
+    },
+    {
+        "task_id": 38,
+        "category": "Lists and arrays",
+        "description": "Write a function to find the product of all elements in a list.",
+        "difficulty": "medium",
+        "input": "[1, 2, 3, 4]",
+        "expected_output": "24"
+    },
+    {
+        "task_id": 39,
+        "category": "Lists and arrays",
+        "description": "Write a function to find the index of the first occurrence of a given element.",
+        "difficulty": "medium",
+        "input": "([1, 2, 3, 2, 4], 2)",
+        "expected_output": "1"
+    },
+    {
+        "task_id": 40,
+        "category": "Lists and arrays",
+        "description": "Write a function to check if a list contains any duplicates.",
+        "difficulty": "medium",
+        "input": "[1, 2, 3, 4, 2]",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 41,
+        "category": "Mathematics",
+        "description": "Write a function to check if a number is prime.",
+        "difficulty": "medium",
+        "input": "7",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 42,
+        "category": "Mathematics",
+        "description": "Write a function to compute the factorial of a number.",
+        "difficulty": "medium",
+        "input": "5",
+        "expected_output": "120"
+    },
+    {
+        "task_id": 43,
+        "category": "Mathematics",
+        "description": "Write a function to calculate the greatest common divisor (GCD) of two numbers.",
+        "difficulty": "medium",
+        "input": "(48, 18)",
+        "expected_output": "6"
+    },
+    {
+        "task_id": 44,
+        "category": "Mathematics",
+        "description": "Write a function to check whether a number is a perfect square.",
+        "difficulty": "medium",
+        "input": "16",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 45,
+        "category": "Mathematics",
+        "description": "Write a function to generate the first n Fibonacci numbers.",
+        "difficulty": "medium",
+        "input": "6",
+        "expected_output": "[0, 1, 1, 2, 3, 5]"
+    },
+    {
+        "task_id": 46,
+        "category": "Mathematics",
+        "description": "Write a function to check if a number is an Armstrong number.",
+        "difficulty": "medium",
+        "input": "153",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 47,
+        "category": "Mathematics",
+        "description": "Write a function to convert a decimal number to binary.",
+        "difficulty": "medium",
+        "input": "10",
+        "expected_output": "'1010'"
+    },
+    {
+        "task_id": 48,
+        "category": "Mathematics",
+        "description": "Write a function to calculate the sum of digits of a number.",
+        "difficulty": "medium",
+        "input": "1234",
+        "expected_output": "10"
+    },
+    {
+        "task_id": 49,
+        "category": "Mathematics",
+        "description": "Write a function to find all factors of a number.",
+        "difficulty": "medium",
+        "input": "12",
+        "expected_output": "[1, 2, 3, 4, 6, 12]"
+    },
+    {
+        "task_id": 50,
+        "category": "Mathematics",
+        "description": "Write a function to check if a number is a palindrome.",
+        "difficulty": "medium",
+        "input": "121",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 51,
+        "category": "Mathematics",
+        "description": "Write a function to find the LCM (Least Common Multiple) of two numbers.",
+        "difficulty": "medium",
+        "input": "(4, 5)",
+        "expected_output": "20"
+    },
+    {
+        "task_id": 52,
+        "category": "Mathematics",
+        "description": "Write a function to convert a binary number to decimal.",
+        "difficulty": "medium",
+        "input": "'1101'",
+        "expected_output": "13"
+    },
+    {
+        "task_id": 53,
+        "category": "Mathematics",
+        "description": "Write a function to count the number of digits in a number.",
+        "difficulty": "medium",
+        "input": "123456",
+        "expected_output": "6"
+    },
+    {
+        "task_id": 54,
+        "category": "Mathematics",
+        "description": "Write a function to calculate the power of a number (x^y).",
+        "difficulty": "medium",
+        "input": "(2, 3)",
+        "expected_output": "8"
+    },
+    {
+        "task_id": 55,
+        "category": "Mathematics",
+        "description": "Write a function to sum all even numbers in a list.",
+        "difficulty": "medium",
+        "input": "[1, 2, 3, 4, 5, 6]",
+        "expected_output": "12"
+    },
+    {
+        "task_id": 56,
+        "category": "Mathematics",
+        "description": "Write a function to find the second largest number in a list.",
+        "difficulty": "medium",
+        "input": "[10, 20, 30, 40, 50]",
+        "expected_output": "40"
+    },
+    {
+        "task_id": 57,
+        "category": "Mathematics",
+        "description": "Write a function to check if a number is divisible by another number.",
+        "difficulty": "medium",
+        "input": "(20, 5)",
+        "expected_output": "True"
+    },
+    {
+        "task_id": 58,
+        "category": "Mathematics",
+        "description": "Write a function to calculate the average of a list of numbers.",
+        "difficulty": "medium",
+        "input": "[10, 20, 30, 40]",
+        "expected_output": "25.0"
+    },
+    {
+        "task_id": 59,
+        "category": "Mathematics",
+        "description": "Write a function to find the square root of a number.",
+        "difficulty": "medium",
+        "input": "81",
+        "expected_output": "9.0"
+    },
+    {
+        "task_id": 60,
+        "category": "Mathematics",
+        "description": "Write a function to check if a number is even or odd.",
+        "difficulty": "medium",
+        "input": "13",
+        "expected_output": "'odd'"
+    },
+    {
+    "task_id": 61,
+    "category": "Dictionaries and sets",
+    "description": "Izračunaj koliko puta se svaka riječ pojavljuje u listi riječi.",
+    "difficulty": "medium",
+    "input": ["apple", "banana", "apple", "orange", "banana", "apple"],
+    "expected_output": {"apple": 3, "banana": 2, "orange": 1}
+  },
+  {
+    "task_id": 62,
+    "category": "Dictionaries and sets",
+    "description": "Vrati riječi koje se pojavljuju samo jednom u listi.",
+    "difficulty": "medium",
+    "input": ["dog", "cat", "dog", "mouse", "elephant", "cat", "lion"],
+    "expected_output": ["mouse", "elephant", "lion"]
+  },
+  {
+    "task_id": 63,
+    "category": "Dictionaries and sets",
+    "description": "Odredi presjek dvaju skupova brojeva.",
+    "difficulty": "medium",
+    "input": {"set1": [1, 2, 3, 4], "set2": [3, 4, 5, 6]},
+    "expected_output": [3, 4]
+  },
+  {
+    "task_id": 64,
+    "category": "Dictionaries and sets",
+    "description": "Spoji dva rječnika tako da se vrijednosti istih ključeva zbrajaju.",
+    "difficulty": "medium",
+    "input": {"dict1": {"a": 2, "b": 3}, "dict2": {"b": 4, "c": 5}},
+    "expected_output": {"a": 2, "b": 7, "c": 5}
+  },
+  {
+    "task_id": 65,
+    "category": "Dictionaries and sets",
+    "description": "Provjeri sadrže li dva skupa iste elemente bez obzira na redoslijed.",
+    "difficulty": "medium",
+    "input": {"set1": [1, 2, 3], "set2": [3, 2, 1]},
+    "expected_output": true
+  },
+  {
+    "task_id": 66,
+    "category": "Dictionaries and sets",
+    "description": "Vrati ključeve iz rječnika koji imaju najveću vrijednost.",
+    "difficulty": "medium",
+    "input": {"a": 3, "b": 7, "c": 7, "d": 2},
+    "expected_output": ["b", "c"]
+  },
+  {
+    "task_id": 67,
+    "category": "Dictionaries and sets",
+    "description": "Ukloni sve duplikate iz liste koristeći skupove.",
+    "difficulty": "medium",
+    "input": [1, 2, 2, 3, 1, 4],
+    "expected_output": [1, 2, 3, 4]
+  },
+  {
+    "task_id": 68,
+    "category": "Dictionaries and sets",
+    "description": "Za listu stringova vrati rječnik s duljinama tih stringova.",
+    "difficulty": "medium",
+    "input": ["apple", "banana", "kiwi"],
+    "expected_output": {"apple": 5, "banana": 6, "kiwi": 4}
+  },
+  {
+    "task_id": 69,
+    "category": "Dictionaries and sets",
+    "description": "Provjeri sadrži li rječnik barem jedan ključ čija vrijednost prelazi 10.",
+    "difficulty": "medium",
+    "input": {"a": 5, "b": 12, "c": 7},
+    "expected_output": true
+  },
+  {
+    "task_id": 70,
+    "category": "Dictionaries and sets",
+    "description": "Zamijeni vrijednosti u rječniku tako da postanu ključevi, a ključevi vrijednosti.",
+    "difficulty": "medium",
+    "input": {"a": 1, "b": 2, "c": 3},
+    "expected_output": {"1": "a", "2": "b", "3": "c"}
+  },
+  {
+    "task_id": 71,
+    "category": "Dictionaries and sets",
+    "description": "Iz rječnika filtriraj samo one parove gdje su vrijednosti parni brojevi.",
+    "difficulty": "medium",
+    "input": {"x": 2, "y": 3, "z": 4},
+    "expected_output": {"x": 2, "z": 4}
+  },
+  {
+    "task_id": 72,
+    "category": "Dictionaries and sets",
+    "description": "Vrati sve zajedničke ključeve dvaju rječnika.",
+    "difficulty": "medium",
+    "input": {"dict1": {"a": 1, "b": 2}, "dict2": {"b": 3, "c": 4}},
+    "expected_output": ["b"]
+  },
+  {
+    "task_id": 73,
+    "category": "Dictionaries and sets",
+    "description": "Odredi simetričnu razliku dvaju skupova.",
+    "difficulty": "medium",
+    "input": {"set1": [1, 2, 3], "set2": [3, 4, 5]},
+    "expected_output": [1, 2, 4, 5]
+  },
+  {
+    "task_id": 74,
+    "category": "Dictionaries and sets",
+    "description": "Zamijeni sve vrijednosti u rječniku s njihovim kvadratima.",
+    "difficulty": "medium",
+    "input": {"a": 2, "b": 3},
+    "expected_output": {"a": 4, "b": 9}
+  },
+  {
+    "task_id": 75,
+    "category": "Dictionaries and sets",
+    "description": "Vrati set svih znakova koji se pojavljuju u listi riječi.",
+    "difficulty": "medium",
+    "input": ["cat", "dog"],
+    "expected_output": ["c", "a", "t", "d", "o", "g"]
+  },
+  {
+    "task_id": 76,
+    "category": "Dictionaries and sets",
+    "description": "Zbroji sve vrijednosti u rječniku koje su veće od 10.",
+    "difficulty": "medium",
+    "input": {"a": 15, "b": 5, "c": 20},
+    "expected_output": 35
+  },
+  {
+    "task_id": 77,
+    "category": "Dictionaries and sets",
+    "description": "Spoji više listi u jedan skup jedinstvenih vrijednosti.",
+    "difficulty": "medium",
+    "input": [[1, 2], [2, 3], [3, 4]],
+    "expected_output": [1, 2, 3, 4]
+  },
+  {
+    "task_id": 78,
+    "category": "Dictionaries and sets",
+    "description": "Vrati sve parove ključ-vrijednost gdje ključ sadrži slovo 'a'.",
+    "difficulty": "medium",
+    "input": {"apple": 1, "banana": 2, "kiwi": 3},
+    "expected_output": {"apple": 1, "banana": 2}
+  },
+  {
+    "task_id": 79,
+    "category": "Dictionaries and sets",
+    "description": "Za dvije liste riječi vrati riječi koje se pojavljuju u obje.",
+    "difficulty": "medium",
+    "input": {"list1": ["dog", "cat", "fish"], "list2": ["cat", "lion", "fish"]},
+    "expected_output": ["cat", "fish"]
+  },
+    {
+      "task_id": 80,
+      "category": "Dictionaries and sets",
+      "description": "Return a dictionary where the keys are the unique characters of the word, and the values are their counts.",
+      "difficulty": "medium",
+      "input": "programiranje",
+      "expected_output": {"p": 1, "r": 3, "o": 1, "g": 1, "a": 2, "m": 1, "i": 2, "n": 1, "j": 1, "e": 1}
+    },
+    {
+      "task_id": 81,
+      "category": "Algorithms and logic",
+      "description": "Sort the list of integers in ascending order.",
+      "difficulty": "medium",
+      "input": "[5, 3, 8, 1, 2]",
+      "expected_output": "[1, 2, 3, 5, 8]"
+    },
+    {
+      "task_id": 82,
+      "category": "Algorithms and logic",
+      "description": "Find the second smallest number in the list.",
+      "difficulty": "medium",
+      "input": "[7, 3, 9, 5, 3]",
+      "expected_output": "5"
+    },
+    {
+      "task_id": 83,
+      "category": "Algorithms and logic",
+      "description": "Check whether the list contains duplicates.",
+      "difficulty": "medium",
+      "input": "[1, 2, 3, 4, 5, 1]",
+      "expected_output": "True"
+    },
+    {
+      "task_id": 84,
+      "category": "Algorithms and logic",
+      "description": "Swap the smallest and largest numbers in the list.",
+      "difficulty": "medium",
+      "input": "[3, 1, 4, 1, 5, 9]",
+      "expected_output": "[3, 9, 4, 1, 5, 1]"
+    },
+    {
+      "task_id": 85,
+      "category": "Algorithms and logic",
+      "description": "Calculate the median of the list of numbers.",
+      "difficulty": "medium",
+      "input": "[7, 1, 3]",
+      "expected_output": "3"
+    },
+    {
+      "task_id": 86,
+      "category": "Algorithms and logic",
+      "description": "Find the longest sequence of consecutive increasing numbers.",
+      "difficulty": "medium",
+      "input": "[1, 2, 2, 3, 4, 1, 5]",
+      "expected_output": "[2, 3, 4]"
+    },
+    {
+      "task_id": 87,
+      "category": "Algorithms and logic",
+      "description": "Implement binary search on a sorted list.",
+      "difficulty": "medium",
+      "input": "[1, 3, 5, 7, 9], target = 5",
+      "expected_output": "2"
+    },
+    {
+      "task_id": 88,
+      "category": "Algorithms and logic",
+      "description": "Rotate the list to the right by k positions.",
+      "difficulty": "medium",
+      "input": "[1, 2, 3, 4, 5], k = 2",
+      "expected_output": "[4, 5, 1, 2, 3]"
+    },
+    {
+      "task_id": 89,
+      "category": "Algorithms and logic",
+      "description": "Return all numbers that appear more than once.",
+      "difficulty": "medium",
+      "input": "[4, 3, 2, 7, 8, 2, 3, 1]",
+      "expected_output": "[2, 3]"
+    },
+    {
+      "task_id": 90,
+      "category": "Algorithms and logic",
+      "description": "Merge two sorted lists into one sorted list.",
+      "difficulty": "medium",
+      "input": "[1, 3, 5], [2, 4, 6]",
+      "expected_output": "[1, 2, 3, 4, 5, 6]"
+    },
+    {
+      "task_id": 91,
+      "category": "Algorithms and logic",
+      "description": "Calculate the sum of all even numbers in the list.",
+      "difficulty": "medium",
+      "input": "[1, 2, 3, 4, 5, 6]",
+      "expected_output": "12"
+    },
+    {
+      "task_id": 92,
+      "category": "Algorithms and logic",
+      "description": "Find the first number that appears exactly once.",
+      "difficulty": "medium",
+      "input": "[2, 3, 4, 2, 3, 5, 4]",
+      "expected_output": "5"
+    },
+    {
+      "task_id": 93,
+      "category": "Algorithms and logic",
+      "description": "Check if the list is a palindrome (the same forwards and backwards).",
+      "difficulty": "medium",
+      "input": "[1, 2, 3, 2, 1]",
+      "expected_output": "True"
+    },
+    {
+      "task_id": 94,
+      "category": "Algorithms and logic",
+      "description": "Multiply all elements of the list except the current one for each index.",
+      "difficulty": "medium",
+      "input": "[1, 2, 3, 4]",
+      "expected_output": "[24, 12, 8, 6]"
+    },
+    {
+      "task_id": 95,
+      "category": "Algorithms and logic",
+      "description": "Find the equilibrium index where the sum to the left equals the sum to the right.",
+      "difficulty": "medium",
+      "input": "[1, 7, 3, 6, 5, 6]",
+      "expected_output": "3"
+    },
+    {
+      "task_id": 96,
+      "category": "Algorithms and logic",
+      "description": "Move all zeros to the end of the list while maintaining the order of other elements.",
+      "difficulty": "medium",
+      "input": "[0, 1, 0, 3, 12]",
+      "expected_output": "[1, 3, 12, 0, 0]"
+    },
+    {
+      "task_id": 97,
+      "category": "Algorithms and logic",
+      "description": "Return a sequence where each element is the sum of the previous two (Fibonacci-like).",
+      "difficulty": "medium",
+      "input": "n = 5, seed = [1, 1]",
+      "expected_output": "[1, 1, 2, 3, 5]"
+    },
+    {
+      "task_id": 98,
+      "category": "Algorithms and logic",
+      "description": "Remove all duplicate values from the list while preserving order.",
+      "difficulty": "medium",
+      "input": "[1, 2, 2, 3, 1, 4]",
+      "expected_output": "[1, 2, 3, 4]"
+    },
+    {
+      "task_id": 99,
+      "category": "Algorithms and logic",
+      "description": "Sort the list of numbers by the number of digits.",
+      "difficulty": "medium",
+      "input": "[123, 4, 56, 7890, 1]",
+      "expected_output": "[1, 4, 56, 123, 7890]"
+    },
+    {
+      "task_id": 100,
+      "category": "Algorithms and logic",
+      "description": "Return the k largest elements from the list.",
+      "difficulty": "medium",
+      "input": "[1, 23, 12, 9, 30, 2, 50], k = 3",
+      "expected_output": "[30, 50, 23]"
+    }
+]

@@ -14,22 +14,22 @@ class ModelExecutionManager:
     Upravlja izvršavanjem LLM modela, praćenjem resursa i procesiranjem rezultata
     """
     
-    def __init__(self, model_manager, resource_manager, sandbox_manager, prompt_formatter, solution_evaluator):
+    def __init__(self, model_manager, resource_manager, prompt_formatter, solution_evaluator):
         """
         Inicijalizira manager za izvršavanje modela
         
         Args:
             model_manager: Manager za LLM modele
             resource_manager: Manager za praćenje resursa
-            sandbox_manager: Manager za Daytona sandbox
             prompt_formatter: Formatter za promptove
             solution_evaluator: Evaluator za generirana rješenja
         """
         self.model_manager = model_manager
         self.resource_manager = resource_manager
-        self.sandbox_manager = sandbox_manager
         self.prompt_formatter = prompt_formatter
         self.solution_evaluator = solution_evaluator
+        
+        logger.info("ModelExecutionManager: Konfiguriran za lokalno izvršavanje modela")
         
     async def execute_large_model(self, task):
         """
@@ -69,27 +69,15 @@ class ModelExecutionManager:
             # 2. Pripremamo prompt i izvršavamo model
             task_prompt = self.prompt_formatter.format_task_prompt(task, model_name)
             
-            logger.info(f"Izvršavanje {model_name} modela u Daytona sandboxu za generiranje rješenja")
-            
             execution_start_time = time.time()
             
-            sandbox_solution = await self.sandbox_manager.execute_model_in_sandbox(
-                task_prompt, 
-                model_name
-            )
+            # Izvršavamo model lokalno
+            logger.info(f"Izvršavanje {model_name} modela LOKALNO")
+            solution = await model.generate(task_prompt)
+            logger.info(f"Lokalno izvršavanje velikog modela završeno")
             
             execution_duration = time.time() - execution_start_time
             logger.info(f"Izvršavanje velikog modela {model_name} trajalo: {execution_duration:.2f} sekundi")
-            
-            if sandbox_solution is not None:
-                logger.info(f"Uspješno generirano rješenje u Daytona sandboxu")
-                solution = sandbox_solution
-            else:
-                logger.warning(f"Sandbox generiranje nije uspjelo, pokušavam lokalno izvršavanje modela")
-                fallback_start_time = time.time()
-                solution = await model.generate(task_prompt)
-                fallback_duration = time.time() - fallback_start_time
-                logger.info(f"Lokalno izvršavanje velikog modela trajalo: {fallback_duration:.2f} sekundi")
                 
             result["solution"] = solution
             
@@ -195,29 +183,18 @@ class ModelExecutionManager:
             logger.info(f"Započinjem praćenje resursa za model {branch_name}")
             session_id = await self.resource_manager.track_model_resources(model, task_id, branch_name)
             
-            # 2. Izvršavamo model u sandboxu i mjerimo vrijeme
+            # 2. Izvršavamo model i mjerimo vrijeme
             model_name = model.model_name if hasattr(model, 'model_name') else "default"
-            logger.info(f"Izvršavanje {model_name} modela u Daytona sandboxu za generiranje rješenja za {branch_name}")
             
             execution_start_time = time.time()
             
-            sandbox_solution = await self.sandbox_manager.execute_model_in_sandbox(
-                task_prompt, 
-                model_name
-            )
+            # Izvršavamo model lokalno
+            logger.info(f"Izvršavanje {model_name} modela LOKALNO za {branch_name}")
+            solution = await model.generate(task_prompt)
+            logger.info(f"Lokalno izvršavanje modela za {branch_name} završeno")
             
             execution_duration = time.time() - execution_start_time
             logger.info(f"Izvršavanje modela za {branch_name} trajalo: {execution_duration:.2f} sekundi")
-            
-            if sandbox_solution is not None:
-                logger.info(f"Uspješno generirano rješenje u Daytona sandboxu za {branch_name}")
-                solution = sandbox_solution
-            else:
-                logger.warning(f"Sandbox generiranje nije uspjelo za {branch_name}, pokušavam lokalno izvršavanje modela")
-                fallback_start_time = time.time()
-                solution = await model.generate(task_prompt)
-                fallback_duration = time.time() - fallback_start_time
-                logger.info(f"Lokalno izvršavanje modela za {branch_name} trajalo: {fallback_duration:.2f} sekundi")
                 
             result["solution"] = solution
             

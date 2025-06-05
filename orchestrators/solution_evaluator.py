@@ -1,5 +1,7 @@
 import logging
 import re
+import ast
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -10,102 +12,127 @@ class SolutionEvaluator:
     
     def evaluate_solution(self, task, solution):
         """
-        Evaluation implementation that compiles and executes the solution with test cases
+        Evaluation implementation for tasks with input/expected_output format
         
         Args:
-            task (dict): Task document
+            task (dict): Task document with 'input' and 'expected_output'
             solution (str): Generated solution
             
         Returns:
             dict: Evaluation result
         """
         code = self._extract_code(solution)
-            
+        
+        # 1. Syntax validation
         try:
             compile(code, "<string>", "exec")
+        except SyntaxError as e:
+            return {
+                "success": False, 
+                "explanation": f"Syntax error: {str(e)}", 
+                "error_type": "syntax_error"
+            }
+        
+        # 2. Security check
+        if not self._is_safe_code(code):
+            return {
+                "success": False,
+                "explanation": "Code contains unsafe operations",
+                "error_type": "security_error"
+            }
+        
+        # 3. Execute and test
+        try:
+            # Create isolated namespace
+            namespace = {}
+            exec(code, {"__builtins__": {}}, namespace)
             
-            test_list = task.get('test_list', [])
-            if test_list:
-                local_namespace = {}
-                global_namespace = {"__builtins__": __builtins__}
-                
-                try:
-                    exec(code, global_namespace, local_namespace)
-                except Exception as e:
-                    return {
-                        "success": False, 
-                        "explanation": f"Solution execution failed: {str(e)}", 
-                        "error_type": "execution_error"
-                    }
-                
-                test_setup_code = task.get('test_setup_code', '')
-                if test_setup_code:
-                    try:
-                        exec(test_setup_code, global_namespace, local_namespace)
-                    except Exception as e:
-                        return {
-                            "success": False, 
-                            "explanation": f"Test setup code execution failed: {str(e)}", 
-                            "error_type": "test_setup_error"
-                        }
-                
-                test_results = []
-                for test_idx, test in enumerate(test_list):
-                    try:
-                        exec(test, global_namespace, local_namespace)
-                        test_results.append({
-                            "test_idx": test_idx,
-                            "test": test,
-                            "success": True
-                        })
-                    except AssertionError as e:
-                        test_results.append({
-                            "test_idx": test_idx,
-                            "test": test,
-                            "success": False,
-                            "error": f"Assertion failed: {str(e) if str(e) else 'assertion error'}"
-                        })
-                        return {
-                            "success": False, 
-                            "explanation": f"Test case {test_idx} failed: {test}", 
-                            "error_type": "test_failure",
-                            "test_results": test_results
-                        }
-                    except Exception as e:
-                        test_results.append({
-                            "test_idx": test_idx,
-                            "test": test,
-                            "success": False,
-                            "error": str(e)
-                        })
-                        return {
-                            "success": False, 
-                            "explanation": f"Test case {test_idx} execution error: {str(e)}", 
-                            "error_type": "test_execution_error",
-                            "test_results": test_results
-                        }
-                
+            # Find the function
+            function_name = self._extract_function_name(code)
+            if not function_name or function_name not in namespace:
                 return {
-                    "success": True, 
-                    "explanation": f"All {len(test_results)} test cases passed successfully",
-                    "test_results": test_results
+                    "success": False,
+                    "explanation": "No valid function found in solution",
+                    "error_type": "no_function_error"
+                }
+            
+            func = namespace[function_name]
+            
+            # Prepare test input
+            test_input = self._parse_input(task['input'])
+            expected_output = self._parse_expected_output(task['expected_output'])
+            
+            # Execute function
+            if isinstance(test_input, tuple):
+                actual_output = func(*test_input)
+            else:
+                actual_output = func(test_input)
+            
+            # Compare results
+            if self._compare_outputs(actual_output, expected_output):
+                return {
+                    "success": True,
+                    "explanation": "Solution correct",
+                    "actual_output": str(actual_output),
+                    "expected_output": str(expected_output)
                 }
             else:
-                return {"success": True, "explanation": "Solution compiles successfully, but no test cases were provided"}
+                return {
+                    "success": False,
+                    "explanation": f"Wrong output. Expected: {expected_output}, Got: {actual_output}",
+                    "error_type": "wrong_output",
+                    "actual_output": str(actual_output),
+                    "expected_output": str(expected_output)
+                }
                 
         except Exception as e:
-            return {"success": False, "explanation": f"Solution fails to compile: {str(e)}", "error_type": "compile_error"}
+            return {
+                "success": False,
+                "explanation": f"Runtime error: {str(e)}",
+                "error_type": "runtime_error"
+            }
+    
+    def _extract_function_name(self, code):
+        """Extract function name from code"""
+        try:
+            tree = ast.parse(code)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    return node.name
+        except:
+            pass
+        return None
+    
+    def _parse_input(self, input_str):
+        """Parse input string to Python object"""
+        try:
+            return eval(input_str)
+        except:
+            return input_str
+    
+    def _parse_expected_output(self, output_str):
+        """Parse expected output string to Python object"""
+        try:
+            return eval(output_str)
+        except:
+            return output_str
+    
+    def _compare_outputs(self, actual, expected):
+        """Compare actual and expected outputs"""
+        if type(actual) != type(expected):
+            # Try string comparison
+            return str(actual).strip() == str(expected).strip()
+        
+        if isinstance(expected, list):
+            return sorted(actual) == sorted(expected)
+        
+        if isinstance(expected, (int, float)):
+            return abs(actual - expected) < 1e-6
+        
+        return actual == expected
     
     def _extract_code(self, solution):
-        """
-        Extract code from a solution text
-        
-        Args:
-            solution (str): Solution text, potentially containing code blocks
-            
-        Returns:
-            str: Extracted code
-        """
+        """Extract code from solution text"""
         code_pattern = r"```python\s*(.*?)\s*```"
         code_match = re.search(code_pattern, solution, re.DOTALL)
         

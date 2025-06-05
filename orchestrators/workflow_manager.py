@@ -13,7 +13,6 @@ from orchestrators.solution_evaluator import SolutionEvaluator
 from orchestrators.resource_manager import ResourceManager
 from orchestrators.branching_strategy import BranchingStrategy
 from orchestrators.result_processor import ResultProcessor
-from orchestrators.daytona_sandbox_manager import DaytonaSandboxManager
 from orchestrators.model_execution_manager import ModelExecutionManager
 
 logger = logging.getLogger(__name__)
@@ -42,18 +41,19 @@ class WorkflowManager:
         self.resource_manager = ResourceManager(config, self.ollama_tracker)
         self.result_processor = ResultProcessor(mongo_client)
         
+        # Get max branching depth from config (default to 3 if not present)
+        max_branching_level = config.get("max_branching_depth", 3)
+        
         # Inicijalizacija novih komponenti
-        self.sandbox_manager = DaytonaSandboxManager()
-        self.branching_strategy = BranchingStrategy(self.sandbox_manager, max_branching_level=3)
+        self.branching_strategy = BranchingStrategy(max_branching_level=max_branching_level)
         self.model_execution_manager = ModelExecutionManager(
             self.model_manager,
             self.resource_manager,
-            self.sandbox_manager,
             self.prompt_formatter,
             self.solution_evaluator
         )
         
-        logger.info("Workflow manager inicijaliziran")
+        logger.info(f"Workflow manager inicijaliziran (max grananje: {max_branching_level})")
     
     def import_mbpp_data(self, file_path):
         """
@@ -190,5 +190,40 @@ class WorkflowManager:
             
             failed_result = self.result_processor.create_failed_result(task, str(e))
             self.result_processor.save_result(failed_result)
+        finally:
+            loop.close()
+            
+    def run_multiple_tasks(self, tasks):
+        """
+        Pokreni evaluacijski pipeline za više zadataka s ograničenim grananjem
+        
+        Args:
+            tasks (list): Lista zadataka za obradu
+        """
+        logger.info(f"Izvršavam {len(tasks)} zadataka s ograničenim grananjem")
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            loop.run_until_complete(self.model_manager.download_models())
+            
+            for i, task in enumerate(tasks):
+                task_id = task.get('task_id', 'unknown')
+                logger.info(f"Obrađujem zadatak {i+1}/{len(tasks)}: {task_id}")
+                logger.info(f"Opis zadatka: {task.get('text', '')}")
+                
+                try:
+                    result = loop.run_until_complete(self.process_task(task))
+                    
+                    if result:
+                        self.result_processor.save_result(result)
+                        self.result_processor.print_summary(result)
+                except Exception as e:
+                    logger.error(f"Greška pri obradi zadatka: {str(e)}")
+                    logger.error(traceback.format_exc())
+                    
+                    failed_result = self.result_processor.create_failed_result(task, str(e))
+                    self.result_processor.save_result(failed_result)
         finally:
             loop.close()

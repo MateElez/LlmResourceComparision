@@ -1,6 +1,9 @@
 import logging
 import asyncio
 from models.ollama_model import OllamaModel
+from typing import Dict, Any
+
+from utils.ollama_resource_tracker import OllamaResourceTracker
 
 logger = logging.getLogger(__name__)
 
@@ -202,3 +205,17 @@ class ResourceManager:
             "duration_seconds": avg_duration,
             "total_models_used": len(resource_stats_list)
         }
+    
+    def track_ollama_resources(self, interval: float = 1.0, duration: int = 10) -> Dict[str, Any]:
+        """
+        Track the total CPU and memory usage of all Ollama processes over a specified duration.
+
+        Args:
+            interval (float): Sampling interval in seconds.
+            duration (int): Total duration to track resources in seconds.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing average and maximum CPU and memory usage.
+        """
+        tracker = OllamaResourceTracker()
+        return tracker.track_ollama_resources(interval=interval, duration=duration)
